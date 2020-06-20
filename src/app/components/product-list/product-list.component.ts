@@ -10,9 +10,15 @@ import {ActivatedRoute} from '@angular/router';
 })
 export class ProductListComponent implements OnInit {
 
-  products: Product[];
-  currentCategoryId: number;
-  searchMode: boolean;
+  products: Product[] = [];
+  currentCategoryId = 1;
+  previousCategoryId = 1;
+  searchMode = false;
+  private previousKeyword: string;
+
+  pageNumber = 1;
+  pageSize = 12;
+  totalElements = 0;
 
   constructor(private productService: ProductService,
               private route: ActivatedRoute) {
@@ -24,7 +30,7 @@ export class ProductListComponent implements OnInit {
     });
   }
 
-  private listProducts() {
+  listProducts() {
     this.searchMode = this.route.snapshot.paramMap.has('keyword');
 
     if (this.searchMode) {
@@ -42,19 +48,37 @@ export class ProductListComponent implements OnInit {
       this.currentCategoryId = 1;
     }
 
-    this.productService.getProductList(this.currentCategoryId).subscribe(
-      data => {
-        this.products = data;
-      }
-    );
+    if (this.previousCategoryId !== this.currentCategoryId) {
+      this.pageNumber = 1;
+    }
+    this.previousCategoryId = this.currentCategoryId;
+
+    this.productService.getProductListPaginate(this.pageNumber - 1,
+      this.pageSize,
+      this.currentCategoryId)
+      .subscribe(data => {
+          this.products = data._embedded.products;
+          this.pageNumber = data.page.number + 1;
+          this.pageSize = data.page.size;
+          this.totalElements = data.page.totalElements;
+        }
+      );
   }
 
   private handleSearchProducts() {
     const keyword: string = this.route.snapshot.paramMap.get('keyword');
 
-    this.productService.searchProducts(keyword).subscribe(
-      data => {
-        this.products = data;
+    if (this.previousKeyword !== keyword) {
+      this.pageNumber = 1;
+    }
+    this.previousKeyword = keyword;
+
+    this.productService.searchProductsPaginate(this.pageNumber - 1, this.pageSize, keyword)
+      .subscribe(data => {
+        this.products = data._embedded.products;
+        this.pageNumber = data.page.number + 1;
+        this.pageSize = data.page.size;
+        this.totalElements = data.page.totalElements;
       }
     );
   }
