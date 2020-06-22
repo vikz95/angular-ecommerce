@@ -43,10 +43,11 @@
 
           <tr>
             <td colspan="2"></td>
-            <td><b>Total Quantity: {{totalQuantity}}</b>
+            <td>
+              <b>Total Quantity: {{totalQuantity}}</b>
               <p>Shipping: FREE</p>
               <b>Total Price: {{totalPrice | currency:'USD'}}</b><br>
-              <a href="checkout-page.html" class="primary-btn">Checkout</a>
+              <button routerLink="/checkout" class="btn btn-primary">Checkout</button>
             </td>
           </tr>
 
